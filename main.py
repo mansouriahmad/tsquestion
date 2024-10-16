@@ -1,5 +1,5 @@
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class CityType(Enum):
   LOW = 1
@@ -18,47 +18,73 @@ class CompensationType(Enum):
         return CompensationType.LOW_FULL
       return CompensationType.HIGH_FULL
     return NotImplemented
+  
+  def convert_to_full(self):
+    if self != CompensationType.HIGH_FULL and self != CompensationType.LOW_FULL:
+      return self + self
+    return self
 
 def to_datetime(date_str):
-  return datetime.strptime(date_str, "%m/%d/%y")
+  return datetime.strptime(date_str, "%m/%d/%Y")
 
-set_1 = [(CityType.HIGH, "9/1/15", "9/3/15")]
-set_2 = [(CityType.LOW, "9/1/15", "9/1/15"), 
-        (CityType.HIGH, "9/2/15", "9/6/15"), 
-        (CityType.LOW, "9/6/15", "9/8/15")]
 
-set_3 = [(CityType.LOW, "9/1/15", "9/3/15"), 
-        (CityType.HIGH, "9/5/15", "9/7/15"), 
-        (CityType.HIGH, "9/8/15", "9/8/15")]
+def calculate_compensation(set):
+  sorted_set = sorted(set, key=lambda x: (to_datetime(x[1]), to_datetime(x[2])))
+  
+  days_record = {}
+  
+  for project in sorted_set:
+    # print(project)
+    city_type, start_date_str, end_date_str = project
+    start_date = to_datetime(start_date_str)
+    end_date = to_datetime(end_date_str)
 
-set_4 = [(CityType.LOW, "9/1/15", "9/1/15"), 
-        (CityType.LOW, "9/1/15", "9/1/15"), 
-        (CityType.HIGH, "9/2/15", "9/2/15"), 
-        (CityType.HIGH, "9/2/15", "9/3/15")]
+
+    current_date = start_date
+    while current_date <= end_date:
+      if current_date == start_date:
+        day_before_project_start = current_date - timedelta(days=1)
+
+        if day_before_project_start in days_record: #We don't have a gap
+          cur_val = days_record[day_before_project_start]
+          full_val = cur_val.convert_to_full()
+          days_record[day_before_project_start] = full_val
+
+          default_start_compensation_type = CompensationType.HIGH_FULL if city_type == CityType.HIGH else CompensationType.LOW_FULL
+          days_record[current_date] = default_start_compensation_type if current_date not in days_record else default_start_compensation_type + days_record[current_date]
+        else: # There is a gap
+          default_start_compensation_type = CompensationType.HIGH_TRAVEL if city_type == CityType.HIGH else CompensationType.LOW_TRAVEL
+          days_record[current_date] = default_start_compensation_type if current_date not in days_record else default_start_compensation_type + days_record[current_date]
+      elif current_date != end_date:
+        default_start_compensation_type = CompensationType.HIGH_FULL if city_type == CityType.HIGH else CompensationType.LOW_FULL
+        days_record[current_date] = default_start_compensation_type if current_date not in days_record else default_start_compensation_type + days_record[current_date]
+      else:
+        default_start_compensation_type = CompensationType.HIGH_TRAVEL if city_type == CityType.HIGH else CompensationType.LOW_TRAVEL
+        days_record[current_date] = default_start_compensation_type if current_date not in days_record else default_start_compensation_type + days_record[current_date]
+      current_date = current_date + timedelta(days=1)
+  print(days_record)
+  print("------------------")
+
+
+set_1 = [(CityType.LOW, "09/01/2015", "09/03/2015")]
+set_2 = [(CityType.LOW, "09/01/2015", "09/01/2015"), 
+        (CityType.HIGH, "09/02/2015", "09/06/2015"), 
+        (CityType.LOW, "09/06/2015", "09/08/2015")]
+
+set_3 = [(CityType.LOW, "09/01/2015", "09/03/2015"), 
+        (CityType.HIGH, "09/05/2015", "09/07/2015"), 
+        (CityType.HIGH, "09/08/2015", "09/08/2015")]
+
+set_4 = [(CityType.LOW, "09/01/2015", "09/01/2015"), 
+        (CityType.LOW, "09/01/2015", "09/01/2015"), 
+        (CityType.HIGH, "09/02/2015", "09/02/2015"), 
+        (CityType.HIGH, "09/02/2015", "09/03/2015")]
 
 sets = [set_1, set_2, set_3, set_4]
+# sets = [set_4]
 
-projects = [
-            (CityType.LOW, "9/1/15", "9/3/15"),
-            (CityType.HIGH, "9/2/15", "9/6/15"),
-            (CityType.LOW, "9/6/15", "9/8/15"),
-            (CityType.HIGH, "9/1/15", "9/4/15"),
-            (CityType.LOW, "9/1/15", "9/2/15"),
-          ]
 
 for set in sets:
-  sorted_set = sorted(set, key=lambda x: (to_datetime(x[1]), to_datetime(x[2])))
-
-for project in sorted_set:
-  print(project)
-print("----------------------------" )
+  calculate_compensation(set)
 
 
-A = CompensationType.HIGH_FULL
-B = CompensationType.HIGH_TRAVEL
-C = CompensationType.LOW_FULL
-D = CompensationType.LOW_TRAVEL
-
-for item1 in [A,B,C,D]:
-  for item2 in [A,B,C,D]:
-    print(item1, item2, item1 + item2)

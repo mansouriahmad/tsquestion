@@ -45,13 +45,14 @@ def calculate_compensation(set):
       if current_date == start_date:
         day_before_project_start = current_date - timedelta(days=1)
 
-        if day_before_project_start in days_record: #We don't have a gap
-          cur_val = days_record[day_before_project_start]
-          full_val = cur_val.convert_to_full()
-          days_record[day_before_project_start] = full_val
-
-          default_start_compensation_type = CompensationType.HIGH_FULL if city_type == CityType.HIGH else CompensationType.LOW_FULL
-          days_record[current_date] = default_start_compensation_type if current_date not in days_record else default_start_compensation_type + days_record[current_date]
+        if current_date not in days_record:
+          if day_before_project_start in days_record: #We don't have a gap
+            cur_val = days_record[day_before_project_start]
+            full_val = cur_val.convert_to_full()
+            days_record[day_before_project_start] = full_val
+            days_record[current_date] = CompensationType.HIGH_FULL if city_type == CityType.HIGH else CompensationType.LOW_FULL
+          else:
+            days_record[current_date] = CompensationType.HIGH_TRAVEL if city_type == CityType.HIGH else CompensationType.LOW_TRAVEL
         else: # There is a gap
           default_start_compensation_type = CompensationType.HIGH_TRAVEL if city_type == CityType.HIGH else CompensationType.LOW_TRAVEL
           days_record[current_date] = default_start_compensation_type if current_date not in days_record else default_start_compensation_type + days_record[current_date]
@@ -67,6 +68,7 @@ def calculate_compensation(set):
 
 
 set_1 = [(CityType.LOW, "09/01/2015", "09/03/2015")]
+
 set_2 = [(CityType.LOW, "09/01/2015", "09/01/2015"), 
         (CityType.HIGH, "09/02/2015", "09/06/2015"), 
         (CityType.LOW, "09/06/2015", "09/08/2015")]
@@ -80,8 +82,16 @@ set_4 = [(CityType.LOW, "09/01/2015", "09/01/2015"),
         (CityType.HIGH, "09/02/2015", "09/02/2015"), 
         (CityType.HIGH, "09/02/2015", "09/03/2015")]
 
-sets = [set_1, set_2, set_3, set_4]
-# sets = [set_4]
+set_5 = [(CityType.LOW, "09/01/2015", "09/02/2015"),
+        (CityType.HIGH, "09/02/2015", "09/04/2015"),
+        (CityType.HIGH, "09/06/2015", "09/06/2015")]
+
+set_6 = [(CityType.HIGH, "09/01/2015", "09/03/2015"),
+        (CityType.LOW, "09/05/2015", "09/05/2015")]
+
+sets = [set_1, set_2, set_3, set_4, set_5, set_6]
+# sets = [set_5]
+
 
 
 for set in sets:

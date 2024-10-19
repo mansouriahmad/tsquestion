@@ -27,8 +27,10 @@ class CompensationType(Enum):
         `NotImplemented` if `other` is not a `CompensationType` instance.
     """
     if isinstance(other, CompensationType):
-      if other == CompensationType.ZERO or other == CompensationType.ZERO:
+      if other == CompensationType.ZERO:
         return self
+      elif self == CompensationType.ZERO:
+        return other
       return CompensationType.LOW_FULL if self.value + other.value in [90, 120] else CompensationType.HIGH_FULL
     return NotImplemented
   

@@ -1,0 +1,55 @@
+<div class="container mt-3">
+  <h2>Project List</h2>
+
+  <!-- Button to add a project -->
+  <button class="btn btn-primary mb-3" (click)="openAddProjectDialog()">Add Project</button>
+
+  <!-- Project list -->
+  <ul class="list-group">
+    <li class="list-group-item" *ngFor="let project of projects; let i = index">
+      {{ project.cityType | cityTypeName }} - {{ project.startDate }} to {{ project.endDate }}
+      <button class="btn btn-danger btn-sm float-end" (click)="deleteProject(i)">Delete</button>
+    </li>
+  </ul>
+
+  <!-- Clear all projects button -->
+  <button class="btn btn-warning mt-3" (click)="clearProjects()">Clear Projects</button>
+
+  <!-- Submit button to send data to Django backend -->
+  <button class="btn btn-success mt-3" (click)="submitProjects()">Submit</button>
+
+  <!-- Add Project Dialog (using Bootstrap modal) -->
+  <div class="modal" tabindex="-1" [ngClass]="{'show': showDialog}" [ngStyle]="{'display': showDialog ? 'block' : 'none'}">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Project</h5>
+          <button type="button" class="btn-close" (click)="closeDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <form #projectForm="ngForm">
+            <div class="mb-3">
+              <label for="cityType" class="form-label">City Type</label>
+              <select id="cityType" class="form-select" [(ngModel)]="newProject.cityType" name="cityType" required>
+                <option [ngValue]="CityType.LOW">Low</option>
+                <option [ngValue]="CityType.HIGH">High</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="startDate" class="form-label">Start Date</label>
+              <input type="date" class="form-control" id="startDate" [(ngModel)]="newProject.startDate" name="startDate" required>
+            </div>
+            <div class="mb-3">
+              <label for="endDate" class="form-label">End Date</label>
+              <input type="date" class="form-control" id="endDate" [(ngModel)]="newProject.endDate" name="endDate" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDialog()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="addProject()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

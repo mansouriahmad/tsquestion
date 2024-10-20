@@ -72,7 +72,7 @@ export class ProjectListComponent {
   }
 
   submitProjects() {
-    this.http.post<SubmitProjectResponse>('http://localhost:8000/api/submit-projects', this.projects)
+    this.http.post<SubmitProjectResponse>('https://api.sereh.org/api/submit-projects', this.projects)
       .subscribe({
         next: (response: SubmitProjectResponse) => {
           this.totalCompensation = response.result

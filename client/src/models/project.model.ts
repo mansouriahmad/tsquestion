@@ -8,3 +8,7 @@ export interface Project {
   startDate: string,
   endDate: string
 }
+
+export interface SubmitProjectResponse {
+  result: number
+}

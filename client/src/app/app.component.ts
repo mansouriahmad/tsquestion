@@ -7,10 +7,4 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'client';
-
-  items = [1,2,3,4,5];
-
-  login() {
-
-  }
 }

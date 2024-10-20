@@ -5,7 +5,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class CityTypeNamePipe implements PipeTransform {
 
-  // Map numeric values to CityType names
   transform(value: number): string {
     switch (value) {
       case 1:

@@ -1,7 +1,11 @@
-from enum import Enum
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import ProjectSerializer
 from datetime import datetime, timedelta
-from compensation_type import CompensationType
-from city_type import CityType
+from models.compensation_type import CompensationType
+from models.city_type import CityType
+
+
 
 def to_datetime(date_str):
   """
@@ -16,7 +20,7 @@ def to_datetime(date_str):
   return datetime.strptime(date_str, "%m/%d/%Y")
 
 
-def return_compensations_by_date(set):
+def return_compensations(set):
   """
   Calculates compensation based on a list of projects.
 
@@ -27,15 +31,13 @@ def return_compensations_by_date(set):
       - `start_date_str`: The start date of the project in the format "mm/dd/yyyy".
       - `end_date_str`: The end date of the project in the format "mm/dd/yyyy".
   """
-  sorted_set = sorted(set, key=lambda x: (to_datetime(x[1]), to_datetime(x[2])))
+  sorted_set = sorted(set, key=lambda x: (x[1], x[2]))
   
   compensation_by_date = {}
   
   for project in sorted_set:
     
-    city_type, start_date_str, end_date_str = project
-    start_date = to_datetime(start_date_str)
-    end_date = to_datetime(end_date_str)
+    city_type, start_date, end_date = project
 
     current_date = start_date
 
@@ -63,53 +65,23 @@ def return_compensations_by_date(set):
         compensation_by_date[current_date] = compensation_by_date.get(current_date, CompensationType.ZERO) + default_start_compensation_type
       
       current_date = current_date + timedelta(days=1)
-
+  
   total_compensation = sum(compensation.value for compensation in compensation_by_date.values())
   return total_compensation
 
-def main():
-    # Define your sets
-    set_1 = [(CityType.LOW, "09/01/2015", "09/03/2015")]
-    set_2 = [
-        (CityType.LOW, "09/01/2015", "09/01/2015"),
-        (CityType.HIGH, "09/02/2015", "09/06/2015"),
-        (CityType.LOW, "09/06/2015", "09/08/2015")
-    ]
-    set_3 = [
-        (CityType.LOW, "09/01/2015", "09/03/2015"),
-        (CityType.HIGH, "09/05/2015", "09/07/2015"),
-        (CityType.HIGH, "09/08/2015", "09/08/2015")
-    ]
-    set_4 = [
-        (CityType.LOW, "09/01/2015", "09/01/2015"),
-        (CityType.LOW, "09/01/2015", "09/01/2015"),
-        (CityType.HIGH, "09/02/2015", "09/02/2015"),
-        (CityType.HIGH, "09/02/2015", "09/03/2015")
-    ]
-    set_5 = [
-        (CityType.LOW, "09/01/2015", "09/02/2015"),
-        (CityType.HIGH, "09/02/2015", "09/04/2015"),
-        (CityType.HIGH, "09/06/2015", "09/06/2015")
-    ]
-    set_6 = [
-        (CityType.HIGH, "09/01/2015", "09/03/2015"),
-        (CityType.LOW, "09/05/2015", "09/05/2015")
-    ]
 
-    # Combine sets into a list
-    sets = [set_1, set_2, set_3, set_4, set_5, set_6]
+@api_view(['POST'])
+def submit_projects(request):
+    serializer = ProjectSerializer(data=request.data, many=True)
+    if serializer.is_valid():
+      formatted_data = []
+      for project in serializer.validated_data:
+        print(project['startDate'])
+        city_type = CityType(project['cityType'])  # Convert integer to CityType enum
+        print(city_type)
+        formatted_data.append((city_type, project['startDate'], project['endDate']))
 
-    # Iterate over each set
-    for index, current_set in enumerate(sets):
-        compensation_by_date = return_compensations_by_date(current_set)
-
-        print(f"Compensations for Set {index + 1}:")
-        for date, compensation in compensation_by_date.items():
-            print(f"Date: {date}, Compensation: {compensation.name}")
-
-        total_compensation = sum(compensation.value for compensation in compensation_by_date.values())
-        print("Total Compensation for this set is:", total_compensation)
-        print("=======================================================================")
-
-if __name__ == "__main__":
-    main()
+      total = return_compensations(formatted_data)
+      # total = sum([project['cityType'] for project in serializer.validated_data])
+      return Response({"result": total})  # Example: return total of cityType values
+    return Response(serializer.errors, status=400)

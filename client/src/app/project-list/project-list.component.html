@@ -1,7 +1,6 @@
 <div class="container mt-3">
   <h2>Project List</h2>
 
-  <!-- Button to add a project -->
   <button class="btn btn-primary mb-3" (click)="openAddProjectDialog()">Add Project</button>
 
   <!-- Project list -->
@@ -12,14 +11,16 @@
     </li>
   </ul>
 
-  <!-- Clear all projects button -->
   <button class="btn btn-warning mt-3" (click)="clearProjects()">Clear Projects</button>
 
-  <!-- Submit button to send data to Django backend -->
   <button class="btn btn-success mt-3" (click)="submitProjects()">Submit</button>
 
-  <!-- Add Project Dialog (using Bootstrap modal) -->
-  <div class="modal" tabindex="-1" [ngClass]="{'show': showDialog}" [ngStyle]="{'display': showDialog ? 'block' : 'none'}">
+  <div *ngIf="totalCompensation !== null" class="alert alert-info mt-3">
+    The total compensation for this set is <b>{{ totalCompensation }}</b>
+  </div>
+
+  <div class="modal" tabindex="-1" [ngClass]="{'show': showDialog}"
+    [ngStyle]="{'display': showDialog ? 'block' : 'none'}">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -37,11 +38,13 @@
             </div>
             <div class="mb-3">
               <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" class="form-control" id="startDate" [(ngModel)]="newProject.startDate" name="startDate" required>
+              <input type="date" class="form-control" id="startDate" [(ngModel)]="newProject.startDate" name="startDate"
+                required>
             </div>
             <div class="mb-3">
               <label for="endDate" class="form-label">End Date</label>
-              <input type="date" class="form-control" id="endDate" [(ngModel)]="newProject.endDate" name="endDate" required>
+              <input type="date" class="form-control" id="endDate" [(ngModel)]="newProject.endDate" name="endDate"
+                required>
             </div>
           </form>
         </div>
